@@ -20,21 +20,6 @@
       window.location.href = authUrl;  // This will initiate the OAuth flow
     }
 
-    // Check if we have an authorization code after redirection
-    window.onload = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const authCode = urlParams.get('code');
-
-      // If we have an authorization code, exchange it for tokens
-      if (authCode) {
-        exchangeAuthCodeForTokens(authCode);
-      } else {
-        // If no auth code is found, show the sign-in button
-        document.getElementById('signin-button').style.display = 'block';
-        document.getElementById('token-info').style.display = 'none';  // Hide token information if not logged in
-      }
-    };
-
     // Step 2: Exchange the authorization code for access and refresh tokens
     function exchangeAuthCodeForTokens(authCode) {
       fetch('https://oauth2.googleapis.com/token', {
@@ -73,6 +58,21 @@
       });
     }
 
+    // Check if we have an authorization code after redirection
+    window.onload = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const authCode = urlParams.get('code');
+
+      // If we have an authorization code, exchange it for tokens
+      if (authCode) {
+        exchangeAuthCodeForTokens(authCode);
+      } else {
+        // If no auth code is found, show the sign-in button
+        document.getElementById('signin-button').style.display = 'block';
+        document.getElementById('token-info').style.display = 'none';  // Hide token information if not logged in
+      }
+    };
+
     // Trigger OAuth flow when the user clicks the "Sign in with Google" button
     function handleSignIn() {
       initiateOAuthFlow();
@@ -81,7 +81,7 @@
 </head>
 <body>
   <h1>Get Gmail Access and Refresh Tokens</h1>
-  
+
   <!-- Sign-in Button -->
   <button id="signin-button" onclick="handleSignIn()">Sign in with Google</button>
 
