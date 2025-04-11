@@ -8,25 +8,45 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script> <!-- Load Google Identity Services -->
   <script>
     // Function to initiate OAuth flow after collecting user input
+    // function initiateOAuthFlow() {
+    //   const clientId = document.getElementById('client-id').value;
+    //   const clientSecret = document.getElementById('client-secret').value;
+    //   const redirectUri = 'https://kulovacnedim.github.io/get-gmail-token/';
+    //   const scope = 'https://www.googleapis.com/auth/gmail.readonly';
+
+    //   // Validate user input
+    //   if (!clientId || !clientSecret) {
+    //     alert("Please enter both the Client ID and Client Secret.");
+    //     return;
+    //   }
+
+    //   // Store values in localStorage to persist after page reload
+    //   localStorage.setItem('clientId', clientId);
+    //   localStorage.setItem('clientSecret', clientSecret);
+
+    //   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    //   window.location.href = authUrl;  // This will initiate the OAuth flow
+    // }
     function initiateOAuthFlow() {
-      const clientId = document.getElementById('client-id').value;
-      const clientSecret = document.getElementById('client-secret').value;
-      const redirectUri = 'https://kulovacnedim.github.io/get-gmail-token/';
-      const scope = 'https://www.googleapis.com/auth/gmail.readonly';
+        const clientId = document.getElementById('client-id').value;
+        const clientSecret = document.getElementById('client-secret').value;
+        const redirectUri = 'https://kulovacnedim.github.io/get-gmail-token/';
+        const scope = 'https://www.googleapis.com/auth/gmail.readonly';
 
-      // Validate user input
-      if (!clientId || !clientSecret) {
-        alert("Please enter both the Client ID and Client Secret.");
-        return;
-      }
+        // Validate user input
+        if (!clientId || !clientSecret) {
+            alert("Please enter both the Client ID and Client Secret.");
+            return;
+        }
 
-      // Store values in localStorage to persist after page reload
-      localStorage.setItem('clientId', clientId);
-      localStorage.setItem('clientSecret', clientSecret);
+        // Store values in localStorage to persist after page reload
+        localStorage.setItem('clientId', clientId);
+        localStorage.setItem('clientSecret', clientSecret);
 
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-      window.location.href = authUrl;  // This will initiate the OAuth flow
-    }
+        // Add access_type=offline to the URL to request a refresh token
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&access_type=offline`;
+        window.location.href = authUrl;  // This will initiate the OAuth flow
+        }
 
     // Step 2: Exchange the authorization code for access and refresh tokens
     function exchangeAuthCodeForTokens(authCode) {
