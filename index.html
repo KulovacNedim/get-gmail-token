@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <h1>Google OAuth -- Enter Your Keys</h1>
+  <h1>Google OAuth --- Enter Your Keys</h1>
   <!-- Form to input Client ID and Client Secret -->
   <form id="key-form">
     <label for="client-id">Google Client ID:</label>
@@ -23,54 +23,38 @@
   <button id="login-button" style="display:none;">Login with Google</button>
 
   <script>
-    // Handle form submission to get keys
-    document.getElementById('key-form').addEventListener('submit', function(event) {
-      event.preventDefault();
+  // Load the Google API library and initialize auth2
+  gapi.load('auth2', function() {
+    console.log('Google API library loaded successfully.');
+  });
 
-      // Get Client ID and Client Secret from input fields
-      const clientId = document.getElementById('client-id').value;
-      const clientSecret = document.getElementById('client-secret').value;
-
-      // Check if the inputs are valid
-      if (clientId && clientSecret) {
-        // Hide the form and show the login button
-        document.getElementById('key-form').style.display = 'none';
-        document.getElementById('login-button').style.display = 'block';
-
-        // Save the client ID and secret for later use in OAuth flow
-        window.GOOGLE_CLIENT_ID = clientId;
-        window.GOOGLE_CLIENT_SECRET = clientSecret;
-      } else {
-        alert("Please fill in both the Client ID and Client Secret.");
-      }
-    });
-
-    // Google login button click handler
-    document.getElementById('login-button').onclick = function() {
-      if (window.GOOGLE_CLIENT_ID && window.GOOGLE_CLIENT_SECRET) {
-        gapi.auth2.init({
-          client_id: window.GOOGLE_CLIENT_ID,
-        }).then(function(auth2) {
-          auth2.signIn().then(onSignIn);
-        });
-      } else {
-        alert("Client ID and Client Secret are missing.");
-      }
-    };
-
-    // Handle the sign-in and token retrieval
-    function onSignIn(googleUser) {
-      const id_token = googleUser.getAuthResponse().id_token;
-      const access_token = googleUser.getAuthResponse().access_token;
-      const refresh_token = googleUser.getAuthResponse().refresh_token;
-
-      // Display the tokens in the console (or you can send them to your backend)
-      console.log("Access Token: ", access_token);
-      console.log("Refresh Token: ", refresh_token);
-
-      alert('Tokens retrieved successfully! You can copy them from the console.');
+  // Google login button click handler
+  document.getElementById('login-button').onclick = function() {
+    if (window.GOOGLE_CLIENT_ID && window.GOOGLE_CLIENT_SECRET) {
+      gapi.auth2.init({
+        client_id: window.GOOGLE_CLIENT_ID,
+      }).then(function(auth2) {
+        auth2.signIn().then(onSignIn);
+      }).catch(function(error) {
+        console.error('Error initializing Google Auth:', error);
+      });
+    } else {
+      alert("Client ID and Client Secret are missing.");
     }
-  </script>
+  };
+
+  // Handle the sign-in and token retrieval
+  function onSignIn(googleUser) {
+    const id_token = googleUser.getAuthResponse().id_token;
+    const access_token = googleUser.getAuthResponse().access_token;
+
+    // Display the tokens in the console (or you can send them to your backend)
+    console.log("Access Token: ", access_token);
+    console.log("ID Token: ", id_token);
+
+    alert('Tokens retrieved successfully! You can copy them from the console.');
+  }
+</script>
 
 </body>
 </html>
