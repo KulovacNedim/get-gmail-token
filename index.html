@@ -20,12 +20,18 @@
         return;
       }
 
+      // Store values in localStorage to persist after page reload
+      localStorage.setItem('clientId', clientId);
+      localStorage.setItem('clientSecret', clientSecret);
+
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
       window.location.href = authUrl;  // This will initiate the OAuth flow
     }
 
     // Step 2: Exchange the authorization code for access and refresh tokens
-    function exchangeAuthCodeForTokens(authCode, clientId, clientSecret) {
+    function exchangeAuthCodeForTokens(authCode) {
+      const clientId = localStorage.getItem('clientId');
+      const clientSecret = localStorage.getItem('clientSecret');
       console.log("Exchanging auth code for tokens...");
 
       fetch('https://oauth2.googleapis.com/token', {
@@ -70,21 +76,26 @@
     window.onload = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const authCode = urlParams.get('code');
-      const clientId = document.getElementById('client-id').value;
-      const clientSecret = document.getElementById('client-secret').value;
 
       // Log to verify values
       console.log("Auth Code:", authCode);
-      console.log("Client ID:", clientId);
-      console.log("Client Secret:", clientSecret);
-
+      
       // If we have an authorization code, exchange it for tokens
-      if (authCode && clientId && clientSecret) {
-        exchangeAuthCodeForTokens(authCode, clientId, clientSecret);
+      if (authCode) {
+        exchangeAuthCodeForTokens(authCode);
       } else {
         // If no auth code is found, show the sign-in button and input fields
         document.getElementById('signin-button').style.display = 'block';
         document.getElementById('token-info').style.display = 'none';  // Hide token information if not logged in
+
+        // Retrieve client ID and secret from localStorage if available
+        const storedClientId = localStorage.getItem('clientId');
+        const storedClientSecret = localStorage.getItem('clientSecret');
+        
+        if (storedClientId && storedClientSecret) {
+          document.getElementById('client-id').value = storedClientId;
+          document.getElementById('client-secret').value = storedClientSecret;
+        }
       }
     };
 
