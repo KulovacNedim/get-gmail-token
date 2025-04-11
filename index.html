@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com;">
   <title>Google OAuth with Input Fields</title>
-  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -23,11 +24,6 @@
   <button id="login-button" style="display:none;">Login with Google</button>
 
   <script>
-    // Load the Google API library and initialize auth2
-    gapi.load('auth2', function() {
-        console.log('Google API library loaded successfully.');
-    });
-    
     // Handle form submission to get keys
     document.getElementById('key-form').addEventListener('submit', function(event) {
       event.preventDefault();
@@ -53,25 +49,21 @@
     // Google login button click handler
     document.getElementById('login-button').onclick = function() {
       if (window.GOOGLE_CLIENT_ID && window.GOOGLE_CLIENT_SECRET) {
-        gapi.auth2.init({
+        google.accounts.id.initialize({
           client_id: window.GOOGLE_CLIENT_ID,
-        }).then(function(auth2) {
-          auth2.signIn().then(onSignIn);
+          callback: onSignIn
         });
+
+        google.accounts.id.prompt(); // Display the Google Sign-In dialog
       } else {
         alert("Client ID and Client Secret are missing.");
       }
     };
 
     // Handle the sign-in and token retrieval
-    function onSignIn(googleUser) {
-      const id_token = googleUser.getAuthResponse().id_token;
-      const access_token = googleUser.getAuthResponse().access_token;
-      const refresh_token = googleUser.getAuthResponse().refresh_token;
-
-      // Display the tokens in the console (or you can send them to your backend)
-      console.log("Access Token: ", access_token);
-      console.log("Refresh Token: ", refresh_token);
+    function onSignIn(response) {
+      const id_token = response.credential; // ID Token is in the credential field
+      console.log("ID Token: ", id_token);
 
       alert('Tokens retrieved successfully! You can copy them from the console.');
     }
