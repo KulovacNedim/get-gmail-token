@@ -4,145 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Get Gmail Token</title>
-  <script src="https://apis.google.com/js/api.js"></script>  <!-- Load Google's API client -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script> <!-- Load Google Identity Services -->
+</head>
+<body>
+  <h1>Get Gmail Token</h1>
+  
+  <!-- Input fields for client ID and secret -->
+  <div>
+    <label for="client_id">Client ID:</label>
+    <input type="text" id="client_id" placeholder="Enter Client ID" />
+  </div>
+  <div>
+    <label for="client_secret">Client Secret:</label>
+    <input type="text" id="client_secret" placeholder="Enter Client Secret" />
+  </div>
+
+  <button id="signin_button">Sign in with Google</button>
+
+  <div id="token_info">
+    <p id="access_token"></p>
+    <p id="refresh_token"></p>
+  </div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
-    // Function to initiate OAuth flow after collecting user input
-    // function initiateOAuthFlow() {
-    //   const clientId = document.getElementById('client-id').value;
-    //   const clientSecret = document.getElementById('client-secret').value;
-    //   const redirectUri = 'https://kulovacnedim.github.io/get-gmail-token/';
-    //   const scope = 'https://www.googleapis.com/auth/gmail.readonly';
+    const signinButton = document.getElementById('signin_button');
+    const accessTokenElement = document.getElementById('access_token');
+    const refreshTokenElement = document.getElementById('refresh_token');
 
-    //   // Validate user input
-    //   if (!clientId || !clientSecret) {
-    //     alert("Please enter both the Client ID and Client Secret.");
-    //     return;
-    //   }
+    signinButton.addEventListener('click', () => {
+      const clientId = document.getElementById('client_id').value.trim();
+      const clientSecret = document.getElementById('client_secret').value.trim();
+      
+      if (!clientId || !clientSecret) {
+        alert('Please provide both Client ID and Client Secret');
+        return;
+      }
 
-    //   // Store values in localStorage to persist after page reload
-    //   localStorage.setItem('clientId', clientId);
-    //   localStorage.setItem('clientSecret', clientSecret);
+      const googleLogin = google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleCredentialResponse,
+      });
 
-    //   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-    //   window.location.href = authUrl;  // This will initiate the OAuth flow
-    // }
-    function initiateOAuthFlow() {
-        const clientId = document.getElementById('client-id').value;
-        const clientSecret = document.getElementById('client-secret').value;
-        const redirectUri = 'https://kulovacnedim.github.io/get-gmail-token/';
-        const scope = 'https://www.googleapis.com/auth/gmail.readonly';
+      google.accounts.id.prompt(); // Trigger Google login
+    });
 
-        // Validate user input
-        if (!clientId || !clientSecret) {
-            alert("Please enter both the Client ID and Client Secret.");
-            return;
-        }
+    function handleCredentialResponse(response) {
+      const authCode = response.credential;
 
-        // Store values in localStorage to persist after page reload
-        localStorage.setItem('clientId', clientId);
-        localStorage.setItem('clientSecret', clientSecret);
+      console.log('Auth Code:', authCode);
 
-        // Add access_type=offline to the URL to request a refresh token
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&access_type=offline`;
-        window.location.href = authUrl;  // This will initiate the OAuth flow
-        }
+      // Step 2: Exchange the authorization code for tokens (access token and refresh token)
+      const tokenUrl = 'https://oauth2.googleapis.com/token';
+      const data = {
+        code: authCode, // The authorization code received from Google
+        client_id: document.getElementById('client_id').value.trim(), // Your client ID
+        client_secret: document.getElementById('client_secret').value.trim(), // Your client secret
+        redirect_uri: 'https://kulovacnedim.github.io/get-gmail-token/', // Your redirect URI
+        grant_type: 'authorization_code',
+        access_type: 'offline', // This requests the refresh token
+      };
 
-    // Step 2: Exchange the authorization code for access and refresh tokens
-    function exchangeAuthCodeForTokens(authCode) {
-      const clientId = localStorage.getItem('clientId');
-      const clientSecret = localStorage.getItem('clientSecret');
-      console.log("Exchanging auth code for tokens...");
-
-      fetch('https://oauth2.googleapis.com/token', {
+      fetch(tokenUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({
-          code: authCode,
-          client_id: clientId,
-          client_secret: clientSecret,
-          redirect_uri: 'https://kulovacnedim.github.io/get-gmail-token/',
-          grant_type: 'authorization_code',
+        body: new URLSearchParams(data),
+      })
+        .then(response => response.json())
+        .then(tokens => {
+          console.log('Token exchange response:', tokens);
+
+          const accessToken = tokens.access_token;
+          const refreshToken = tokens.refresh_token; // This should be included now
+
+          accessTokenElement.textContent = `Access Token: ${accessToken}`;
+          refreshTokenElement.textContent = `Refresh Token: ${refreshToken}`;
+
+          console.log('Access Token:', accessToken);
+          console.log('Refresh Token:', refreshToken);
         })
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log("Token exchange response:", data);
-
-        const accessToken = data.access_token;
-        const refreshToken = data.refresh_token;
-
-        if (accessToken && refreshToken) {
-          console.log("Access Token:", accessToken);
-          console.log("Refresh Token:", refreshToken);
-
-          // Show token information
-          document.getElementById('signin-button').style.display = 'none';  // Hide sign-in button after successful login
-          document.getElementById('token-info').style.display = 'block';  // Show token info
-          document.getElementById('access-token').textContent = `Access Token: ${accessToken}`;
-          document.getElementById('refresh-token').textContent = `Refresh Token: ${refreshToken}`;
-        } else {
-          console.error('Failed to get access and refresh tokens');
-        }
-      })
-      .catch(error => {
-        console.error('Error exchanging authorization code for tokens:', error);
-      });
-    }
-
-    // Check if we have an authorization code after redirection
-    window.onload = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const authCode = urlParams.get('code');
-
-      // Log to verify values
-      console.log("Auth Code:", authCode);
-      
-      // If we have an authorization code, exchange it for tokens
-      if (authCode) {
-        exchangeAuthCodeForTokens(authCode);
-      } else {
-        // If no auth code is found, show the sign-in button and input fields
-        document.getElementById('signin-button').style.display = 'block';
-        document.getElementById('token-info').style.display = 'none';  // Hide token information if not logged in
-
-        // Retrieve client ID and secret from localStorage if available
-        const storedClientId = localStorage.getItem('clientId');
-        const storedClientSecret = localStorage.getItem('clientSecret');
-        
-        if (storedClientId && storedClientSecret) {
-          document.getElementById('client-id').value = storedClientId;
-          document.getElementById('client-secret').value = storedClientSecret;
-        }
-      }
-    };
-
-    // Trigger OAuth flow when the user clicks the "Sign in with Google" button
-    function handleSignIn() {
-      initiateOAuthFlow();
+        .catch(error => {
+          console.error('Error during token exchange:', error);
+          alert('An error occurred while exchanging the token. Please try again.');
+        });
     }
   </script>
-</head>
-<body>
-  <h1>Get Gmail Access and Refresh Tokens</h1>
-
-  <!-- Input Fields for Client ID and Client Secret -->
-  <label for="client-id">Client ID:</label>
-  <input type="text" id="client-id" placeholder="Enter your Google Client ID" required><br><br>
-
-  <label for="client-secret">Client Secret:</label>
-  <input type="text" id="client-secret" placeholder="Enter your Google Client Secret" required><br><br>
-
-  <!-- Sign-in Button -->
-  <button id="signin-button" onclick="handleSignIn()">Sign in with Google</button>
-
-  <!-- Display Tokens after Authentication -->
-  <div id="token-info" style="display: none;">
-    <h3>Tokens</h3>
-    <p id="access-token"></p>
-    <p id="refresh-token"></p>
-  </div>
 </body>
 </html>
