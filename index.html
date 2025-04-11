@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://accounts.google.com;">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com; object-src 'none';">
   <title>Google OAuth with Input Fields</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -24,6 +24,11 @@
   <button id="login-button" style="display:none;">Login with Google</button>
 
   <script>
+    // Load Google API
+    gapi.load('auth2', function() {
+        console.log('Google API library loaded successfully.');
+    });
+
     // Handle form submission to get keys
     document.getElementById('key-form').addEventListener('submit', function(event) {
       event.preventDefault();
@@ -49,23 +54,52 @@
     // Google login button click handler
     document.getElementById('login-button').onclick = function() {
       if (window.GOOGLE_CLIENT_ID && window.GOOGLE_CLIENT_SECRET) {
-        google.accounts.id.initialize({
+        gapi.auth2.init({
           client_id: window.GOOGLE_CLIENT_ID,
-          callback: onSignIn
+        }).then(function(auth2) {
+          auth2.signIn().then(onSignIn);
         });
-
-        google.accounts.id.prompt(); // Display the Google Sign-In dialog
       } else {
         alert("Client ID and Client Secret are missing.");
       }
     };
 
     // Handle the sign-in and token retrieval
-    function onSignIn(response) {
-      const id_token = response.credential; // ID Token is in the credential field
-      console.log("ID Token: ", id_token);
+    function onSignIn(googleUser) {
+      const id_token = googleUser.getAuthResponse().id_token;
+      const access_token = googleUser.getAuthResponse().access_token;
+      const refresh_token = googleUser.getAuthResponse().refresh_token;
 
+      // Display the tokens in the console (or you can send them to your backend)
+      console.log("Access Token: ", access_token);
+      console.log("Refresh Token: ", refresh_token);
       alert('Tokens retrieved successfully! You can copy them from the console.');
+    }
+
+    // Function to exchange ID token for Access and Refresh tokens
+    function exchangeIdTokenForTokens(id_token) {
+      const tokenEndpoint = 'https://oauth2.googleapis.com/token';
+      
+      const data = new URLSearchParams();
+      data.append('grant_type', 'authorization_code');
+      data.append('code', id_token);  // The ID token you got from signIn
+      data.append('client_id', window.GOOGLE_CLIENT_ID);
+      data.append('client_secret', window.GOOGLE_CLIENT_SECRET);
+      data.append('redirect_uri', 'YOUR_REDIRECT_URI'); // Set this as appropriate
+
+      fetch(tokenEndpoint, {
+        method: 'POST',
+        body: data,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Access Token (via exchange): ", data.access_token);
+        console.log("Refresh Token (via exchange): ", data.refresh_token);
+        
+        // You can now use the new tokens to make API calls
+      })
+      .catch(error => console.error('Error exchanging token:', error));
     }
   </script>
 
