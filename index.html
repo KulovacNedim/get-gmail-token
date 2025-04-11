@@ -28,6 +28,10 @@
       // If we have an authorization code, exchange it for tokens
       if (authCode) {
         exchangeAuthCodeForTokens(authCode);
+      } else {
+        // If no auth code is found, show the sign-in button
+        document.getElementById('signin-button').style.display = 'block';
+        document.getElementById('token-info').style.display = 'none';  // Hide token information if not logged in
       }
     };
 
@@ -54,6 +58,12 @@
         if (accessToken && refreshToken) {
           console.log("Access Token:", accessToken);
           console.log("Refresh Token:", refreshToken);
+
+          // Show token information
+          document.getElementById('signin-button').style.display = 'none';  // Hide sign-in button after successful login
+          document.getElementById('token-info').style.display = 'block';  // Show token info
+          document.getElementById('access-token').textContent = `Access Token: ${accessToken}`;
+          document.getElementById('refresh-token').textContent = `Refresh Token: ${refreshToken}`;
         } else {
           console.error('Failed to get access and refresh tokens');
         }
@@ -71,6 +81,15 @@
 </head>
 <body>
   <h1>Get Gmail Access and Refresh Tokens</h1>
+  
+  <!-- Sign-in Button -->
   <button id="signin-button" onclick="handleSignIn()">Sign in with Google</button>
+
+  <!-- Display Tokens after Authentication -->
+  <div id="token-info" style="display: none;">
+    <h3>Tokens</h3>
+    <p id="access-token"></p>
+    <p id="refresh-token"></p>
+  </div>
 </body>
 </html>
