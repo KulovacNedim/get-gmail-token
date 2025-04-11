@@ -24,8 +24,8 @@
       localStorage.setItem('clientId', clientId);
       localStorage.setItem('clientSecret', clientSecret);
 
-      // Add access_type=offline to get the refresh token
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&access_type=offline`;
+      // Add access_type=offline and approval_prompt=force to get the refresh token
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&access_type=offline&approval_prompt=force`;
       window.location.href = authUrl;  // This will initiate the OAuth flow
     }
 
