@@ -26,6 +26,8 @@
 
     // Step 2: Exchange the authorization code for access and refresh tokens
     function exchangeAuthCodeForTokens(authCode, clientId, clientSecret) {
+      console.log("Exchanging auth code for tokens...");
+
       fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
@@ -41,6 +43,8 @@
       })
       .then(response => response.json())
       .then(data => {
+        console.log("Token exchange response:", data);
+
         const accessToken = data.access_token;
         const refreshToken = data.refresh_token;
 
@@ -69,10 +73,10 @@
       const clientId = document.getElementById('client-id').value;
       const clientSecret = document.getElementById('client-secret').value;
 
-      console.log(urlParams)
-      console.log(authCode)
-      console.log(clientId)
-      console.log(clientSecret)
+      // Log to verify values
+      console.log("Auth Code:", authCode);
+      console.log("Client ID:", clientId);
+      console.log("Client Secret:", clientSecret);
 
       // If we have an authorization code, exchange it for tokens
       if (authCode && clientId && clientSecret) {
