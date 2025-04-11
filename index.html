@@ -69,6 +69,11 @@
       const clientId = document.getElementById('client-id').value;
       const clientSecret = document.getElementById('client-secret').value;
 
+      console.log(urlParams)
+      console.log(authCode)
+      console.log(clientId)
+      console.log(clientSecret)
+
       // If we have an authorization code, exchange it for tokens
       if (authCode && clientId && clientSecret) {
         exchangeAuthCodeForTokens(authCode, clientId, clientSecret);
